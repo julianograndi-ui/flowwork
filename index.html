@@ -344,18 +344,6 @@ export default function FlowWork() {
           </div>
         </Modal>
       )}
-      {modal === "meeting" && (
-        <Modal title="Agendar Reunião" onClose={() => setModal(null)}>
-          <Input label="Título" value={newMeeting.title} onChange={e => setNewMeeting(p => ({ ...p, title: e.target.value }))} placeholder="Título da reunião" />
-          <Input label="Data (ex: hoje, 22/05)" value={newMeeting.date} onChange={e => setNewMeeting(p => ({ ...p, date: e.target.value }))} />
-          <Input label="Horário" type="time" value={newMeeting.time} onChange={e => setNewMeeting(p => ({ ...p, time: e.target.value }))} />
-          <Input label="Pauta" value={newMeeting.agenda} onChange={e => setNewMeeting(p => ({ ...p, agenda: e.target.value }))} placeholder="Pauta da reunião" />
-          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "0.5rem" }}>
-            <Btn variant="ghost" onClick={() => setModal(null)}>Cancelar</Btn>
-            <Btn onClick={addMeeting}>Agendar</Btn>
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }
