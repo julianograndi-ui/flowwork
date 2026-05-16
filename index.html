@@ -8,11 +8,6 @@ const INITIAL_TASKS = [
   { id: 5, name: "Revisar código do módulo", priority: "Média", time: "16:00", assignee: "Gestor", done: false },
 ];
 
-const INITIAL_MEETINGS = [
-  { id: 1, title: "Daily Standup", time: "09:00", date: "hoje", agenda: "Alinhamento da equipe" },
-  { id: 2, title: "Revisão de Sprint", time: "14:00", date: "18/05", agenda: "Sem pauta definida" },
-  { id: 3, title: "Planejamento Q3", time: "10:00", date: "20/05", agenda: "Sem pauta definida" },
-];
 
 const INITIAL_MESSAGES = [
   { id: 1, user: "João", initial: "J", color: "#3B82F6", text: "Bom dia pessoal!" },
@@ -93,12 +88,10 @@ function Btn({ children, onClick, variant = "primary", style: s }) {
 export default function FlowWork() {
   const [activeNav, setActiveNav] = useState("Dashboard");
   const [tasks, setTasks] = useState(INITIAL_TASKS);
-  const [meetings, setMeetings] = useState(INITIAL_MEETINGS);
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [msgInput, setMsgInput] = useState("");
   const [modal, setModal] = useState(null);
   const [newTask, setNewTask] = useState({ name: "", priority: "Média", time: "", assignee: "Gestor" });
-  const [newMeeting, setNewMeeting] = useState({ title: "", date: "", time: "", agenda: "" });
   const chatRef = useRef(null);
 
   const now = new Date();
@@ -106,7 +99,6 @@ export default function FlowWork() {
 
   const doneTasks = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round((doneTasks / tasks.length) * 100) : 0;
-  const todayMeetings = meetings.filter(m => m.date === "hoje").length;
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -128,18 +120,9 @@ export default function FlowWork() {
     setModal(null);
   };
 
-  const addMeeting = () => {
-    if (!newMeeting.title) return;
-    setMeetings(prev => [...prev, { id: Date.now(), ...newMeeting }]);
-    setNewMeeting({ title: "", date: "", time: "", agenda: "" });
-    setModal(null);
-  };
-
   const navItems = [
     { label: "Dashboard", icon: "⊞" },
     { label: "Tarefas", icon: "✅" },
-    { label: "Reuniões", icon: "📅" },
-    { label: "Agenda", icon: "🗓" },
     { label: "Chat", icon: "💬" },
   ];
 
@@ -242,14 +225,11 @@ export default function FlowWork() {
           <div style={{ display: "flex", gap: "1rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
             <StatCard label="Tarefas Hoje" value={tasks.length} sub={`${doneTasks} concluídas`} accent="#3B82F6" />
             <StatCard label="Concluídas" value={doneTasks} sub={`${pct}% do dia`} accent="#10B981" />
-            <StatCard label="Reuniões Hoje" value={todayMeetings} sub="agendadas" accent="#F59E0B" />
             <StatCard label="Equipe Online" value={TEAM.filter(t => t.status === "online").length} sub={`de ${TEAM.length} membros`} accent="#8B5CF6" />
           </div>
 
-          {/* Middle row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem" }}>
-
-            {/* Chat */}
+          {/* Middle row - Chat full width */}
+          <div style={{ marginBottom: "1.25rem" }}>
             <Card>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
                 <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>💬 Chat da Equipe</span>
@@ -281,49 +261,6 @@ export default function FlowWork() {
                   background: "#3B82F6", border: "none", borderRadius: "8px", padding: "0.5rem 0.75rem",
                   color: "#fff", cursor: "pointer", fontSize: "1rem"
                 }}>➤</button>
-              </div>
-            </Card>
-
-            {/* Meetings */}
-            <Card>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>📅 Reuniões</span>
-                <button onClick={() => setModal("meeting")} style={{
-                  background: "#1E3A5F", color: "#60A5FA", border: "1px solid #2563EB", borderRadius: "6px",
-                  padding: "3px 10px", fontSize: "0.75rem", cursor: "pointer"
-                }}>+ Agendar</button>
-              </div>
-              <div style={{ fontSize: "0.7rem", color: "#4B5563", textTransform: "uppercase", marginBottom: "0.4rem" }}>Hoje</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxHeight: 200, overflowY: "auto" }}>
-                {meetings.filter(m => m.date === "hoje").map(m => (
-                  <div key={m.id} style={{ background: "#232D42", borderRadius: "8px", padding: "0.5rem 0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                        <span style={{ color: "#F59E0B", fontWeight: 700, fontSize: "0.9rem" }}>{m.time}</span>
-                        <span style={{ color: "#F1F5F9", fontSize: "0.8rem" }}>{m.title}</span>
-                      </div>
-                      <div style={{ color: "#64748B", fontSize: "0.72rem" }}>{m.date} · {m.agenda}</div>
-                    </div>
-                    <button onClick={() => setMeetings(p => p.filter(x => x.id !== m.id))} style={{ background: "none", border: "none", color: "#64748B", cursor: "pointer" }}>✕</button>
-                  </div>
-                ))}
-                {meetings.filter(m => m.date !== "hoje").length > 0 && (
-                  <>
-                    <div style={{ fontSize: "0.7rem", color: "#4B5563", textTransform: "uppercase", marginTop: "0.25rem" }}>Próximas</div>
-                    {meetings.filter(m => m.date !== "hoje").map(m => (
-                      <div key={m.id} style={{ background: "#1E2435", borderRadius: "8px", padding: "0.5rem 0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                            <span style={{ color: "#94A3B8", fontWeight: 700, fontSize: "0.9rem" }}>{m.time}</span>
-                            <span style={{ color: "#CBD5E1", fontSize: "0.8rem" }}>{m.title}</span>
-                          </div>
-                          <div style={{ color: "#64748B", fontSize: "0.72rem" }}>{m.date} · {m.agenda}</div>
-                        </div>
-                        <button onClick={() => setMeetings(p => p.filter(x => x.id !== m.id))} style={{ background: "none", border: "none", color: "#64748B", cursor: "pointer" }}>✕</button>
-                      </div>
-                    ))}
-                  </>
-                )}
               </div>
             </Card>
           </div>
@@ -384,12 +321,6 @@ export default function FlowWork() {
                     <span style={{ fontSize: "0.72rem", color: statusColor[m.status] }}>{statusLabel[m.status]}</span>
                   </div>
                 ))}
-              </div>
-              <div style={{ marginTop: "0.75rem" }}>
-                <div style={{ fontSize: "0.72rem", color: "#4B5563", marginBottom: "0.4rem" }}>Agenda da Semana</div>
-                <div style={{ color: "#4B5563", fontSize: "0.78rem", textAlign: "center", padding: "1rem", background: "#0F1623", borderRadius: "8px" }}>
-                  Nenhum compromisso nos próximos 7 dias
-                </div>
               </div>
             </Card>
           </div>
