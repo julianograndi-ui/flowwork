@@ -1,349 +1,333 @@
-import { useState, useEffect, useRef } from "react";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowWork — Painel de Equipe</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0F1623; font-family: 'Segoe UI', system-ui, sans-serif; color: #F1F5F9; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0F1623; }
+    ::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-const INITIAL_TASKS = [
-  { id: 1, name: "Revisar proposta comercial", priority: "Alta", time: "09:00", assignee: "Gestor", done: false },
-  { id: 2, name: "Atualizar documentação", priority: "Média", time: "11:30", assignee: "Gestor", done: false },
-  { id: 3, name: "Reunião de alinhamento", priority: "Alta", time: "14:00", assignee: "Gestor", done: true },
-  { id: 4, name: "Enviar relatório semanal", priority: "Baixa", time: "17:00", assignee: "Gestor", done: true },
-  { id: 5, name: "Revisar código do módulo", priority: "Média", time: "16:00", assignee: "Gestor", done: false },
-];
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
+    const INITIAL_TASKS = [
+      { id: 1, name: "Revisar proposta comercial", priority: "Alta", time: "09:00", assignee: "Gestor", done: false },
+      { id: 2, name: "Atualizar documentação", priority: "Média", time: "11:30", assignee: "Gestor", done: false },
+      { id: 3, name: "Reunião de alinhamento", priority: "Alta", time: "14:00", assignee: "Gestor", done: true },
+      { id: 4, name: "Enviar relatório semanal", priority: "Baixa", time: "17:00", assignee: "Gestor", done: true },
+      { id: 5, name: "Revisar código do módulo", priority: "Média", time: "16:00", assignee: "Gestor", done: false },
+    ];
 
-const INITIAL_MESSAGES = [
-  { id: 1, user: "João", initial: "J", color: "#3B82F6", text: "Bom dia pessoal!" },
-  { id: 2, user: "Maria", initial: "M", color: "#8B5CF6", text: "Bom dia! Tudo certo para a reunião de hoje?" },
-  { id: 3, user: "João", initial: "J", color: "#3B82F6", text: "Sim, já preparei os slides 👍" },
-];
+    const INITIAL_MESSAGES = [
+      { id: 1, user: "João", initial: "J", color: "#3B82F6", text: "Bom dia pessoal!" },
+      { id: 2, user: "Maria", initial: "M", color: "#8B5CF6", text: "Bom dia! Tudo certo para hoje?" },
+      { id: 3, user: "João", initial: "J", color: "#3B82F6", text: "Sim, já preparei os slides 👍" },
+    ];
 
-const TEAM = [
-  { name: "João Silva", role: "Desenvolvedor", status: "online", initial: "J", color: "#3B82F6" },
-  { name: "Maria Costa", role: "Designer", status: "online", initial: "M", color: "#8B5CF6" },
-  { name: "Pedro Lima", role: "Gestor", status: "busy", initial: "P", color: "#10B981" },
-];
+    const TEAM = [
+      { name: "João Silva", role: "Desenvolvedor", status: "online", initial: "J", color: "#3B82F6" },
+      { name: "Maria Costa", role: "Designer", status: "online", initial: "M", color: "#8B5CF6" },
+      { name: "Pedro Lima", role: "Gestor", status: "busy", initial: "P", color: "#10B981" },
+    ];
 
-const priorityColor = { Alta: "#EF4444", Média: "#F59E0B", Baixa: "#10B981" };
-const statusColor = { online: "#10B981", busy: "#F59E0B", ausente: "#6B7280" };
-const statusLabel = { online: "Online", busy: "Ocupado", ausente: "Ausente" };
+    const priorityColor = { Alta: "#EF4444", Média: "#F59E0B", Baixa: "#10B981" };
+    const statusColor = { online: "#10B981", busy: "#F59E0B", ausente: "#6B7280" };
+    const statusLabel = { online: "Online", busy: "Ocupado", ausente: "Ausente" };
 
-function Modal({ title, onClose, children }) {
-  return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem"
-    }}>
-      <div style={{
-        background: "#1E2433", border: "1px solid #2D3748", borderRadius: "12px",
-        padding: "1.5rem", width: "100%", maxWidth: "420px"
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <span style={{ color: "#F1F5F9", fontWeight: 600, fontSize: "1rem" }}>{title}</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#94A3B8", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
+    function Modal({ title, onClose, children }) {
+      return (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"1rem" }}>
+          <div style={{ background:"#1E2433", border:"1px solid #2D3748", borderRadius:"12px", padding:"1.5rem", width:"100%", maxWidth:"420px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"1rem" }}>
+              <span style={{ color:"#F1F5F9", fontWeight:600, fontSize:"1rem" }}>{title}</span>
+              <button onClick={onClose} style={{ background:"none", border:"none", color:"#94A3B8", cursor:"pointer", fontSize:"1.2rem" }}>✕</button>
+            </div>
+            {children}
+          </div>
         </div>
-        {children}
-      </div>
-    </div>
-  );
-}
+      );
+    }
 
-function Input({ label, ...props }) {
-  return (
-    <div style={{ marginBottom: "0.75rem" }}>
-      {label && <label style={{ color: "#94A3B8", fontSize: "0.8rem", display: "block", marginBottom: "4px" }}>{label}</label>}
-      <input {...props} style={{
-        width: "100%", background: "#0F1623", border: "1px solid #2D3748", borderRadius: "8px",
-        padding: "0.5rem 0.75rem", color: "#F1F5F9", fontSize: "0.875rem", outline: "none",
-        boxSizing: "border-box", ...props.style
-      }} />
-    </div>
-  );
-}
-
-function Select({ label, children, ...props }) {
-  return (
-    <div style={{ marginBottom: "0.75rem" }}>
-      {label && <label style={{ color: "#94A3B8", fontSize: "0.8rem", display: "block", marginBottom: "4px" }}>{label}</label>}
-      <select {...props} style={{
-        width: "100%", background: "#0F1623", border: "1px solid #2D3748", borderRadius: "8px",
-        padding: "0.5rem 0.75rem", color: "#F1F5F9", fontSize: "0.875rem", outline: "none",
-        boxSizing: "border-box"
-      }}>{children}</select>
-    </div>
-  );
-}
-
-function Btn({ children, onClick, variant = "primary", style: s }) {
-  const styles = {
-    primary: { background: "#3B82F6", color: "#fff" },
-    ghost: { background: "transparent", color: "#94A3B8", border: "1px solid #2D3748" },
-    danger: { background: "#EF4444", color: "#fff" },
-  };
-  return (
-    <button onClick={onClick} style={{
-      padding: "0.5rem 1rem", borderRadius: "8px", border: "none", cursor: "pointer",
-      fontSize: "0.875rem", fontWeight: 500, ...styles[variant], ...s
-    }}>{children}</button>
-  );
-}
-
-export default function FlowWork() {
-  const [activeNav, setActiveNav] = useState("Dashboard");
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
-  const [msgInput, setMsgInput] = useState("");
-  const [modal, setModal] = useState(null);
-  const [newTask, setNewTask] = useState({ name: "", priority: "Média", time: "", assignee: "Gestor" });
-  const chatRef = useRef(null);
-
-  const now = new Date();
-  const dateStr = now.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
-
-  const doneTasks = tasks.filter(t => t.done).length;
-  const pct = tasks.length ? Math.round((doneTasks / tasks.length) * 100) : 0;
-
-  useEffect(() => {
-    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  }, [messages]);
-
-  const sendMessage = () => {
-    if (!msgInput.trim()) return;
-    setMessages(prev => [...prev, { id: Date.now(), user: "Você", initial: "V", color: "#10B981", text: msgInput }]);
-    setMsgInput("");
-  };
-
-  const toggleTask = (id) => setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  const deleteTask = (id) => setTasks(prev => prev.filter(t => t.id !== id));
-
-  const addTask = () => {
-    if (!newTask.name) return;
-    setTasks(prev => [...prev, { id: Date.now(), ...newTask, done: false }]);
-    setNewTask({ name: "", priority: "Média", time: "", assignee: "Gestor" });
-    setModal(null);
-  };
-
-  const navItems = [
-    { label: "Dashboard", icon: "⊞" },
-    { label: "Tarefas", icon: "✅" },
-    { label: "Chat", icon: "💬" },
-  ];
-
-  const sidebarW = 160;
-
-  const Card = ({ children, style: s }) => (
-    <div style={{
-      background: "#1A2035", border: "1px solid #232D42", borderRadius: "12px",
-      padding: "1rem", ...s
-    }}>{children}</div>
-  );
-
-  const StatCard = ({ label, value, sub, accent }) => (
-    <Card style={{ flex: 1, minWidth: 140 }}>
-      <div style={{ color: "#94A3B8", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{label}</div>
-      <div style={{ color: accent || "#F1F5F9", fontSize: "2rem", fontWeight: 700, lineHeight: 1 }}>{value}</div>
-      <div style={{ marginTop: "0.5rem", height: "3px", background: "#2D3748", borderRadius: "2px" }}>
-        <div style={{ height: "100%", width: `${Math.min(100, (value / 30) * 100)}%`, background: accent || "#3B82F6", borderRadius: "2px" }} />
-      </div>
-      {sub && <div style={{ color: "#64748B", fontSize: "0.75rem", marginTop: "0.4rem" }}>{sub}</div>}
-    </Card>
-  );
-
-  return (
-    <div style={{
-      display: "flex", height: "100vh", background: "#0F1623",
-      fontFamily: "'Segoe UI', system-ui, sans-serif", color: "#F1F5F9", overflow: "hidden"
-    }}>
-      {/* Sidebar */}
-      <div style={{
-        width: sidebarW, background: "#131929", borderRight: "1px solid #1E2840",
-        display: "flex", flexDirection: "column", padding: "1rem 0.75rem", flexShrink: 0
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "2rem", padding: "0 0.25rem" }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#3B82F6", boxShadow: "0 0 8px #3B82F6" }} />
-          <span style={{ fontWeight: 700, fontSize: "1rem", color: "#F1F5F9" }}>FlowWork</span>
+    function FInput({ label, ...props }) {
+      return (
+        <div style={{ marginBottom:"0.75rem" }}>
+          {label && <label style={{ color:"#94A3B8", fontSize:"0.8rem", display:"block", marginBottom:"4px" }}>{label}</label>}
+          <input {...props} style={{ width:"100%", background:"#0F1623", border:"1px solid #2D3748", borderRadius:"8px", padding:"0.5rem 0.75rem", color:"#F1F5F9", fontSize:"0.875rem", outline:"none", boxSizing:"border-box" }} />
         </div>
+      );
+    }
 
-        <div style={{ fontSize: "0.65rem", color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem", paddingLeft: "0.5rem" }}>Principal</div>
-        {navItems.map(({ label, icon }) => (
-          <button key={label} onClick={() => setActiveNav(label)} style={{
-            display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.5rem 0.75rem",
-            borderRadius: "8px", border: "none", cursor: "pointer", width: "100%", textAlign: "left",
-            background: activeNav === label ? "#1E3A5F" : "transparent",
-            color: activeNav === label ? "#60A5FA" : "#94A3B8",
-            fontSize: "0.85rem", marginBottom: "2px", transition: "all 0.15s"
-          }}>
-            <span>{icon}</span>{label}
-          </button>
-        ))}
+    function FSelect({ label, children, ...props }) {
+      return (
+        <div style={{ marginBottom:"0.75rem" }}>
+          {label && <label style={{ color:"#94A3B8", fontSize:"0.8rem", display:"block", marginBottom:"4px" }}>{label}</label>}
+          <select {...props} style={{ width:"100%", background:"#0F1623", border:"1px solid #2D3748", borderRadius:"8px", padding:"0.5rem 0.75rem", color:"#F1F5F9", fontSize:"0.875rem", outline:"none", boxSizing:"border-box" }}>{children}</select>
+        </div>
+      );
+    }
 
-        <div style={{ fontSize: "0.65rem", color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.1em", margin: "1rem 0 0.5rem", paddingLeft: "0.5rem" }}>Equipe</div>
-        <button onClick={() => setActiveNav("Colaboradores")} style={{
-          display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.5rem 0.75rem",
-          borderRadius: "8px", border: "none", cursor: "pointer", width: "100%", textAlign: "left",
-          background: activeNav === "Colaboradores" ? "#1E3A5F" : "transparent",
-          color: activeNav === "Colaboradores" ? "#60A5FA" : "#94A3B8", fontSize: "0.85rem"
-        }}>
-          <span>👥</span> Colaboradores
-        </button>
+    function Btn({ children, onClick, variant="primary" }) {
+      const styles = {
+        primary: { background:"#3B82F6", color:"#fff", border:"none" },
+        ghost: { background:"transparent", color:"#94A3B8", border:"1px solid #2D3748" },
+      };
+      return (
+        <button onClick={onClick} style={{ padding:"0.5rem 1rem", borderRadius:"8px", cursor:"pointer", fontSize:"0.875rem", fontWeight:500, ...styles[variant] }}>{children}</button>
+      );
+    }
 
-        <div style={{ marginTop: "auto", borderTop: "1px solid #1E2840", paddingTop: "0.75rem" }}>
-          <div style={{ fontSize: "0.7rem", color: "#4B5563", marginBottom: "0.5rem" }}>Nome: <span style={{ color: "#94A3B8" }}>Seu nome</span></div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#3B82F6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 700 }}>FW</div>
-            <div>
-              <div style={{ fontSize: "0.75rem", color: "#F1F5F9" }}>FlowWork</div>
-              <div style={{ fontSize: "0.65rem", color: "#10B981" }}>● Conectado</div>
+    function Card({ children, style: s }) {
+      return (
+        <div style={{ background:"#1A2035", border:"1px solid #232D42", borderRadius:"12px", padding:"1rem", ...s }}>{children}</div>
+      );
+    }
+
+    function StatCard({ label, value, sub, accent }) {
+      return (
+        <Card style={{ flex:1, minWidth:140 }}>
+          <div style={{ color:"#94A3B8", fontSize:"0.7rem", textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:"0.5rem" }}>{label}</div>
+          <div style={{ color:accent||"#F1F5F9", fontSize:"2rem", fontWeight:700, lineHeight:1 }}>{value}</div>
+          <div style={{ marginTop:"0.5rem", height:"3px", background:"#2D3748", borderRadius:"2px" }}>
+            <div style={{ height:"100%", width:`${Math.min(100,(value/30)*100)}%`, background:accent||"#3B82F6", borderRadius:"2px" }} />
+          </div>
+          {sub && <div style={{ color:"#64748B", fontSize:"0.75rem", marginTop:"0.4rem" }}>{sub}</div>}
+        </Card>
+      );
+    }
+
+    function FlowWork() {
+      const [activeNav, setActiveNav] = useState("Dashboard");
+      const [tasks, setTasks] = useState(INITIAL_TASKS);
+      const [messages, setMessages] = useState(INITIAL_MESSAGES);
+      const [msgInput, setMsgInput] = useState("");
+      const [modal, setModal] = useState(null);
+      const [newTask, setNewTask] = useState({ name:"", priority:"Média", time:"", assignee:"Gestor" });
+      const chatRef = useRef(null);
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("pt-BR", { weekday:"long", day:"numeric", month:"long" });
+      const doneTasks = tasks.filter(t => t.done).length;
+      const pct = tasks.length ? Math.round((doneTasks / tasks.length) * 100) : 0;
+
+      useEffect(() => {
+        if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
+      }, [messages]);
+
+      const sendMessage = () => {
+        if (!msgInput.trim()) return;
+        setMessages(prev => [...prev, { id: Date.now(), user:"Você", initial:"V", color:"#10B981", text: msgInput }]);
+        setMsgInput("");
+      };
+
+      const toggleTask = (id) => setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+      const deleteTask = (id) => setTasks(prev => prev.filter(t => t.id !== id));
+
+      const addTask = () => {
+        if (!newTask.name) return;
+        setTasks(prev => [...prev, { id: Date.now(), ...newTask, done: false }]);
+        setNewTask({ name:"", priority:"Média", time:"", assignee:"Gestor" });
+        setModal(null);
+      };
+
+      const navItems = [
+        { label:"Dashboard", icon:"⊞" },
+        { label:"Tarefas", icon:"✅" },
+        { label:"Chat", icon:"💬" },
+      ];
+
+      return (
+        <div style={{ display:"flex", height:"100vh", background:"#0F1623", overflow:"hidden" }}>
+
+          {/* Sidebar */}
+          <div style={{ width:160, background:"#131929", borderRight:"1px solid #1E2840", display:"flex", flexDirection:"column", padding:"1rem 0.75rem", flexShrink:0 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginBottom:"2rem", padding:"0 0.25rem" }}>
+              <div style={{ width:10, height:10, borderRadius:"50%", background:"#3B82F6", boxShadow:"0 0 8px #3B82F6" }} />
+              <span style={{ fontWeight:700, fontSize:"1rem", color:"#F1F5F9" }}>FlowWork</span>
+            </div>
+
+            <div style={{ fontSize:"0.65rem", color:"#4B5563", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:"0.5rem", paddingLeft:"0.5rem" }}>Principal</div>
+            {navItems.map(({ label, icon }) => (
+              <button key={label} onClick={() => setActiveNav(label)} style={{
+                display:"flex", alignItems:"center", gap:"0.6rem", padding:"0.5rem 0.75rem",
+                borderRadius:"8px", border:"none", cursor:"pointer", width:"100%", textAlign:"left",
+                background: activeNav === label ? "#1E3A5F" : "transparent",
+                color: activeNav === label ? "#60A5FA" : "#94A3B8",
+                fontSize:"0.85rem", marginBottom:"2px"
+              }}>
+                <span>{icon}</span>{label}
+              </button>
+            ))}
+
+            <div style={{ fontSize:"0.65rem", color:"#4B5563", textTransform:"uppercase", letterSpacing:"0.1em", margin:"1rem 0 0.5rem", paddingLeft:"0.5rem" }}>Equipe</div>
+            <button onClick={() => setActiveNav("Colaboradores")} style={{
+              display:"flex", alignItems:"center", gap:"0.6rem", padding:"0.5rem 0.75rem",
+              borderRadius:"8px", border:"none", cursor:"pointer", width:"100%", textAlign:"left",
+              background: activeNav === "Colaboradores" ? "#1E3A5F" : "transparent",
+              color: activeNav === "Colaboradores" ? "#60A5FA" : "#94A3B8", fontSize:"0.85rem"
+            }}>
+              <span>👥</span> Colaboradores
+            </button>
+
+            <div style={{ marginTop:"auto", borderTop:"1px solid #1E2840", paddingTop:"0.75rem" }}>
+              <div style={{ fontSize:"0.7rem", color:"#4B5563", marginBottom:"0.5rem" }}>Nome: <span style={{ color:"#94A3B8" }}>Seu nome</span></div>
+              <div style={{ display:"flex", alignItems:"center", gap:"0.5rem" }}>
+                <div style={{ width:28, height:28, borderRadius:"50%", background:"#3B82F6", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.7rem", fontWeight:700 }}>FW</div>
+                <div>
+                  <div style={{ fontSize:"0.75rem", color:"#F1F5F9" }}>FlowWork</div>
+                  <div style={{ fontSize:"0.65rem", color:"#10B981" }}>● Conectado</div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {/* Header */}
-        <div style={{
-          padding: "1rem 1.5rem", borderBottom: "1px solid #1E2840",
-          display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0
-        }}>
-          <h1 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>
-            Painel da <span style={{ color: "#3B82F6" }}>Equipe</span>
-          </h1>
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-            <span style={{
-              background: "#0D2D1A", color: "#10B981", border: "1px solid #10B981",
-              borderRadius: "20px", padding: "0.25rem 0.75rem", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "0.4rem"
-            }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
-              Tempo real
-            </span>
-            <span style={{ color: "#64748B", fontSize: "0.8rem" }}>{dateStr}</span>
-          </div>
-        </div>
+          {/* Main */}
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
 
-        {/* Content */}
-        <div style={{ flex: 1, overflow: "auto", padding: "1.25rem 1.5rem" }}>
-
-          {/* Stat cards */}
-          <div style={{ display: "flex", gap: "1rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
-            <StatCard label="Tarefas Hoje" value={tasks.length} sub={`${doneTasks} concluídas`} accent="#3B82F6" />
-            <StatCard label="Concluídas" value={doneTasks} sub={`${pct}% do dia`} accent="#10B981" />
-            <StatCard label="Equipe Online" value={TEAM.filter(t => t.status === "online").length} sub={`de ${TEAM.length} membros`} accent="#8B5CF6" />
-          </div>
-
-          {/* Middle row - Chat full width */}
-          <div style={{ marginBottom: "1.25rem" }}>
-            <Card>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>💬 Chat da Equipe</span>
-                <span style={{ background: "#1E3A5F", color: "#60A5FA", borderRadius: "6px", padding: "2px 10px", fontSize: "0.75rem" }}>Geral</span>
+            {/* Header */}
+            <div style={{ padding:"1rem 1.5rem", borderBottom:"1px solid #1E2840", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
+              <h1 style={{ margin:0, fontSize:"1.5rem", fontWeight:700 }}>
+                Painel da <span style={{ color:"#3B82F6" }}>Equipe</span>
+              </h1>
+              <div style={{ display:"flex", gap:"0.75rem", alignItems:"center" }}>
+                <span style={{ background:"#0D2D1A", color:"#10B981", border:"1px solid #10B981", borderRadius:"20px", padding:"0.25rem 0.75rem", fontSize:"0.75rem", display:"flex", alignItems:"center", gap:"0.4rem" }}>
+                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#10B981", display:"inline-block" }} />
+                  Tempo real
+                </span>
+                <span style={{ color:"#64748B", fontSize:"0.8rem" }}>{dateStr}</span>
               </div>
-              <div ref={chatRef} style={{ height: 160, overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "0.75rem" }}>
-                {messages.map(m => (
-                  <div key={m.id} style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
-                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: m.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 700, flexShrink: 0 }}>{m.initial}</div>
-                    <div>
-                      <div style={{ fontSize: "0.7rem", color: "#64748B" }}>{m.user}</div>
-                      <div style={{ background: "#0F1623", borderRadius: "8px", padding: "0.35rem 0.6rem", fontSize: "0.8rem", color: "#CBD5E1" }}>{m.text}</div>
-                    </div>
+            </div>
+
+            {/* Content */}
+            <div style={{ flex:1, overflow:"auto", padding:"1.25rem 1.5rem" }}>
+
+              {/* Stat cards */}
+              <div style={{ display:"flex", gap:"1rem", marginBottom:"1.25rem", flexWrap:"wrap" }}>
+                <StatCard label="Tarefas Hoje" value={tasks.length} sub={`${doneTasks} concluídas`} accent="#3B82F6" />
+                <StatCard label="Concluídas" value={doneTasks} sub={`${pct}% do dia`} accent="#10B981" />
+                <StatCard label="Equipe Online" value={TEAM.filter(t => t.status === "online").length} sub={`de ${TEAM.length} membros`} accent="#8B5CF6" />
+              </div>
+
+              {/* Chat */}
+              <div style={{ marginBottom:"1.25rem" }}>
+                <Card>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.75rem" }}>
+                    <span style={{ fontWeight:600, fontSize:"0.9rem" }}>💬 Chat da Equipe</span>
+                    <span style={{ background:"#1E3A5F", color:"#60A5FA", borderRadius:"6px", padding:"2px 10px", fontSize:"0.75rem" }}>Geral</span>
                   </div>
-                ))}
-              </div>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <input
-                  value={msgInput}
-                  onChange={e => setMsgInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && sendMessage()}
-                  placeholder="Digite uma mensagem..."
-                  style={{
-                    flex: 1, background: "#0F1623", border: "1px solid #2D3748", borderRadius: "8px",
-                    padding: "0.5rem 0.75rem", color: "#F1F5F9", fontSize: "0.8rem", outline: "none"
-                  }}
-                />
-                <button onClick={sendMessage} style={{
-                  background: "#3B82F6", border: "none", borderRadius: "8px", padding: "0.5rem 0.75rem",
-                  color: "#fff", cursor: "pointer", fontSize: "1rem"
-                }}>➤</button>
-              </div>
-            </Card>
-          </div>
-
-          {/* Bottom row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-
-            {/* Tasks */}
-            <Card>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>✅ Tarefas do Dia</span>
-                  <span style={{ background: "#1E3A5F", color: "#60A5FA", borderRadius: "12px", padding: "1px 8px", fontSize: "0.75rem" }}>{tasks.length}</span>
-                </div>
-                <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <button style={{ background: "#1E3A5F", color: "#60A5FA", border: "1px solid #2563EB", borderRadius: "6px", padding: "3px 8px", fontSize: "0.72rem", cursor: "pointer" }}>📊 Relatório</button>
-                  <button onClick={() => setModal("task")} style={{ background: "#3B82F6", color: "#fff", border: "none", borderRadius: "6px", padding: "3px 8px", fontSize: "0.72rem", cursor: "pointer" }}>+ Nova</button>
-                </div>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxHeight: 220, overflowY: "auto" }}>
-                {tasks.map(t => (
-                  <div key={t.id} style={{
-                    display: "flex", alignItems: "center", gap: "0.6rem",
-                    background: "#0F1623", borderRadius: "8px", padding: "0.5rem 0.75rem",
-                    opacity: t.done ? 0.5 : 1
-                  }}>
-                    <input type="checkbox" checked={t.done} onChange={() => toggleTask(t.id)} style={{ cursor: "pointer", accentColor: "#3B82F6" }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "0.82rem", color: t.done ? "#64748B" : "#F1F5F9", textDecoration: t.done ? "line-through" : "none" }}>{t.name}</div>
-                      <div style={{ display: "flex", gap: "0.4rem", marginTop: "2px" }}>
-                        <span style={{ background: priorityColor[t.priority] + "22", color: priorityColor[t.priority], borderRadius: "4px", padding: "1px 6px", fontSize: "0.68rem" }}>{t.priority}</span>
-                        <span style={{ color: "#64748B", fontSize: "0.68rem" }}>{t.time} · {t.assignee}</span>
+                  <div ref={chatRef} style={{ height:160, overflowY:"auto", display:"flex", flexDirection:"column", gap:"0.6rem", marginBottom:"0.75rem" }}>
+                    {messages.map(m => (
+                      <div key={m.id} style={{ display:"flex", gap:"0.5rem", alignItems:"flex-start" }}>
+                        <div style={{ width:26, height:26, borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.7rem", fontWeight:700, flexShrink:0 }}>{m.initial}</div>
+                        <div>
+                          <div style={{ fontSize:"0.7rem", color:"#64748B" }}>{m.user}</div>
+                          <div style={{ background:"#0F1623", borderRadius:"8px", padding:"0.35rem 0.6rem", fontSize:"0.8rem", color:"#CBD5E1" }}>{m.text}</div>
+                        </div>
                       </div>
-                    </div>
-                    <button onClick={() => deleteTask(t.id)} style={{ background: "none", border: "none", color: "#4B5563", cursor: "pointer", fontSize: "0.8rem" }}>✕</button>
+                    ))}
                   </div>
-                ))}
+                  <div style={{ display:"flex", gap:"0.5rem" }}>
+                    <input
+                      value={msgInput}
+                      onChange={e => setMsgInput(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && sendMessage()}
+                      placeholder="Digite uma mensagem..."
+                      style={{ flex:1, background:"#0F1623", border:"1px solid #2D3748", borderRadius:"8px", padding:"0.5rem 0.75rem", color:"#F1F5F9", fontSize:"0.8rem", outline:"none" }}
+                    />
+                    <button onClick={sendMessage} style={{ background:"#3B82F6", border:"none", borderRadius:"8px", padding:"0.5rem 0.75rem", color:"#fff", cursor:"pointer", fontSize:"1rem" }}>➤</button>
+                  </div>
+                </Card>
               </div>
-            </Card>
 
-            {/* Team */}
-            <Card>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>👥 Equipe</span>
-                <span style={{ background: "#1E3A5F", color: "#60A5FA", border: "1px solid #2563EB", borderRadius: "6px", padding: "3px 10px", fontSize: "0.75rem" }}>+ Membro</span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                {TEAM.map(m => (
-                  <div key={m.name} style={{ display: "flex", alignItems: "center", gap: "0.75rem", background: "#0F1623", borderRadius: "8px", padding: "0.6rem 0.75rem" }}>
-                    <div style={{ position: "relative" }}>
-                      <div style={{ width: 34, height: 34, borderRadius: "50%", background: m.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.85rem" }}>{m.initial}</div>
-                      <div style={{ position: "absolute", bottom: 0, right: 0, width: 9, height: 9, borderRadius: "50%", background: statusColor[m.status], border: "2px solid #0F1623" }} />
+              {/* Bottom row */}
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+
+                {/* Tasks */}
+                <Card>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.75rem" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"0.5rem" }}>
+                      <span style={{ fontWeight:600, fontSize:"0.9rem" }}>✅ Tarefas do Dia</span>
+                      <span style={{ background:"#1E3A5F", color:"#60A5FA", borderRadius:"12px", padding:"1px 8px", fontSize:"0.75rem" }}>{tasks.length}</span>
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "0.85rem", color: "#F1F5F9" }}>{m.name}</div>
-                      <div style={{ fontSize: "0.72rem", color: "#64748B" }}>{m.role}</div>
-                    </div>
-                    <span style={{ fontSize: "0.72rem", color: statusColor[m.status] }}>{statusLabel[m.status]}</span>
+                    <button onClick={() => setModal("task")} style={{ background:"#3B82F6", color:"#fff", border:"none", borderRadius:"6px", padding:"3px 8px", fontSize:"0.72rem", cursor:"pointer" }}>+ Nova</button>
                   </div>
-                ))}
+                  <div style={{ display:"flex", flexDirection:"column", gap:"0.5rem", maxHeight:220, overflowY:"auto" }}>
+                    {tasks.map(t => (
+                      <div key={t.id} style={{ display:"flex", alignItems:"center", gap:"0.6rem", background:"#0F1623", borderRadius:"8px", padding:"0.5rem 0.75rem", opacity: t.done ? 0.5 : 1 }}>
+                        <input type="checkbox" checked={t.done} onChange={() => toggleTask(t.id)} style={{ cursor:"pointer", accentColor:"#3B82F6" }} />
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:"0.82rem", color: t.done ? "#64748B" : "#F1F5F9", textDecoration: t.done ? "line-through" : "none" }}>{t.name}</div>
+                          <div style={{ display:"flex", gap:"0.4rem", marginTop:"2px" }}>
+                            <span style={{ background: priorityColor[t.priority] + "22", color: priorityColor[t.priority], borderRadius:"4px", padding:"1px 6px", fontSize:"0.68rem" }}>{t.priority}</span>
+                            <span style={{ color:"#64748B", fontSize:"0.68rem" }}>{t.time} · {t.assignee}</span>
+                          </div>
+                        </div>
+                        <button onClick={() => deleteTask(t.id)} style={{ background:"none", border:"none", color:"#4B5563", cursor:"pointer", fontSize:"0.8rem" }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+
+                {/* Team */}
+                <Card>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"0.75rem" }}>
+                    <span style={{ fontWeight:600, fontSize:"0.9rem" }}>👥 Equipe</span>
+                    <span style={{ background:"#1E3A5F", color:"#60A5FA", border:"1px solid #2563EB", borderRadius:"6px", padding:"3px 10px", fontSize:"0.75rem" }}>+ Membro</span>
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"0.6rem" }}>
+                    {TEAM.map(m => (
+                      <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"0.75rem", background:"#0F1623", borderRadius:"8px", padding:"0.6rem 0.75rem" }}>
+                        <div style={{ position:"relative" }}>
+                          <div style={{ width:34, height:34, borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, fontSize:"0.85rem" }}>{m.initial}</div>
+                          <div style={{ position:"absolute", bottom:0, right:0, width:9, height:9, borderRadius:"50%", background: statusColor[m.status], border:"2px solid #0F1623" }} />
+                        </div>
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:"0.85rem", color:"#F1F5F9" }}>{m.name}</div>
+                          <div style={{ fontSize:"0.72rem", color:"#64748B" }}>{m.role}</div>
+                        </div>
+                        <span style={{ fontSize:"0.72rem", color: statusColor[m.status] }}>{statusLabel[m.status]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+
               </div>
-            </Card>
+            </div>
           </div>
+
+          {/* Modal Nova Tarefa */}
+          {modal === "task" && (
+            <Modal title="Nova Tarefa" onClose={() => setModal(null)}>
+              <FInput label="Nome" value={newTask.name} onChange={e => setNewTask(p => ({ ...p, name: e.target.value }))} placeholder="Nome da tarefa" />
+              <FSelect label="Prioridade" value={newTask.priority} onChange={e => setNewTask(p => ({ ...p, priority: e.target.value }))}>
+                <option>Alta</option><option>Média</option><option>Baixa</option>
+              </FSelect>
+              <FInput label="Horário" type="time" value={newTask.time} onChange={e => setNewTask(p => ({ ...p, time: e.target.value }))} />
+              <FSelect label="Responsável" value={newTask.assignee} onChange={e => setNewTask(p => ({ ...p, assignee: e.target.value }))}>
+                <option>Gestor</option><option>João</option><option>Maria</option><option>Pedro</option>
+              </FSelect>
+              <div style={{ display:"flex", gap:"0.5rem", justifyContent:"flex-end", marginTop:"0.5rem" }}>
+                <Btn variant="ghost" onClick={() => setModal(null)}>Cancelar</Btn>
+                <Btn onClick={addTask}>Salvar</Btn>
+              </div>
+            </Modal>
+          )}
         </div>
-      </div>
+      );
+    }
 
-      {/* Modals */}
-      {modal === "task" && (
-        <Modal title="Nova Tarefa" onClose={() => setModal(null)}>
-          <Input label="Nome" value={newTask.name} onChange={e => setNewTask(p => ({ ...p, name: e.target.value }))} placeholder="Nome da tarefa" />
-          <Select label="Prioridade" value={newTask.priority} onChange={e => setNewTask(p => ({ ...p, priority: e.target.value }))}>
-            <option>Alta</option><option>Média</option><option>Baixa</option>
-          </Select>
-          <Input label="Horário" type="time" value={newTask.time} onChange={e => setNewTask(p => ({ ...p, time: e.target.value }))} />
-          <Select label="Responsável" value={newTask.assignee} onChange={e => setNewTask(p => ({ ...p, assignee: e.target.value }))}>
-            <option>Gestor</option><option>João</option><option>Maria</option><option>Pedro</option>
-          </Select>
-          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "0.5rem" }}>
-            <Btn variant="ghost" onClick={() => setModal(null)}>Cancelar</Btn>
-            <Btn onClick={addTask}>Salvar</Btn>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<FlowWork />);
+  </script>
+</body>
+</html>
