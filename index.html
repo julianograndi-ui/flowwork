@@ -35,7 +35,7 @@
     tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderTasks(); renderReport();
   });
-  onSnapshot(query(meetCol, orderBy('date'), orderBy('time')), snap => {
+  onSnapshot(query(meetCol, orderBy('createdAt')), snap => {
     meetings = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderMeetings();
     const today = new Date().toISOString().slice(0,10);
